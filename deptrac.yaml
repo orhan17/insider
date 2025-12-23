@@ -1,0 +1,57 @@
+deptrac:
+  paths:
+    - ./app
+
+  layers:
+    - name: Controller
+      collectors:
+        - type: directory
+          value: app/Http/Controllers/.*
+
+    - name: Command
+      collectors:
+        - type: directory
+          value: app/Console/Commands/.*
+
+    - name: Job
+      collectors:
+        - type: directory
+          value: app/Jobs/.*
+
+    - name: Service
+      collectors:
+        - type: directory
+          value: app/Services/.*
+
+    - name: Repository
+      collectors:
+        - type: directory
+          value: app/Repositories/.*
+
+    - name: Model
+      collectors:
+        - type: directory
+          value: app/Models/.*
+
+  ruleset:
+    Controller:
+      - Service
+      - Job
+
+    Command:
+      - Service
+      - Job
+
+    Job:
+      - Service
+      - Model
+
+    Service:
+      - Repository
+      - Model
+
+    Repository:
+      - Model
+
+    Model: []
+

@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: Insider Message Sending API
+  description: API for bulk message sending system
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8081/api/v1
+    description: Local development server
+
+paths:
+  /messages:
+    get:
+      summary: Get list of sent messages
+      description: Retrieves all messages that have been successfully sent
+      operationId: getMessages
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  count:
+                    type: integer
+                    example: 10
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new message
+      description: Creates a new message to be sent
+      operationId: createMessage
+      tags:
+        - Messages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone_number
+                - content
+              properties:
+                phone_number:
+                  type: string
+                  pattern: '^\+[1-9]\d{1,14}$'
+                  example: '+905551111111'
+                  description: Phone number in E.164 format
+                content:
+                  type: string
+                  maxLength: 160
+                  example: 'Insider - Project'
+                  description: Message content (max 160 characters)
+      responses:
+        '201':
+          description: Message created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Message created successfully'
+                  data:
+                    $ref: '#/components/schemas/MessageCreated'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Validation failed'
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+
+components:
+  schemas:
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        phone_number:
+          type: string
+          example: '+905551111111'
+        content:
+          type: string
+          example: 'Insider - Project'
+        status:
+          type: string
+          enum: [pending, sent, failed]
+          example: 'sent'
+        message_id:
+          type: string
+          format: uuid
+          example: '67f2f8a8-ea58-4ed0-a6f9-ff217df4d849'
+          description: External message ID from webhook
+        sent_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T12:00:00+00:00'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T12:00:00+00:00'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T12:00:00+00:00'
+
+    MessageCreated:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        phone_number:
+          type: string
+          example: '+905551111111'
+        content:
+          type: string
+          example: 'Insider - Project'
+        status:
+          type: string
+          example: 'pending'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T12:00:00+00:00'
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: 'Error message'
+        error:
+          type: string
+          example: 'Detailed error information'
+
