@@ -146,7 +146,7 @@ docker-compose logs -f queue
 - **Queue/Job** - Async processing with retry logic
 - **Commands** - CLI for message processing
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # All tests
@@ -169,9 +169,9 @@ docker-compose exec app vendor/bin/php-cs-fixer fix  # Code style
 docker-compose exec app composer deptrac          # Architecture validation
 ```
 
-**Test Results:** ✅ 27 tests, 116 assertions, 100% passing
+**Test Results:** 27 tests, 116 assertions, 100% passing
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - Laravel 10.x
 - PHP 8.2
@@ -180,7 +180,7 @@ docker-compose exec app composer deptrac          # Architecture validation
 - Docker & Docker Compose
 
 
-## 🐳 Docker Services
+## Docker Services
 
 | Service | Port  | Description          |
 |---------|-------|----------------------|
@@ -190,7 +190,7 @@ docker-compose exec app composer deptrac          # Architecture validation
 | app     | -     | PHP-FPM application  |
 | queue   | -     | Queue worker         |
 
-## 📊 Database Schema
+## Database Schema
 
 **messages table:**
 - `id` - Primary key
@@ -201,7 +201,7 @@ docker-compose exec app composer deptrac          # Architecture validation
 - `sent_at` - Timestamp when sent
 - `created_at`, `updated_at` - Timestamps
 
-## 🔧 Useful Commands
+## Useful Commands
 
 ```bash
 # Quick start with Makefile
@@ -233,7 +233,7 @@ docker-compose exec app php artisan cache:clear
 docker-compose exec app php artisan tinker
 ```
 
-## 📝 Environment Variables
+## Environment Variables
 
 ```env
 # Database
@@ -257,21 +257,21 @@ MESSAGE_RATE_INTERVAL=5
 MESSAGE_MAX_LENGTH=160
 ```
 
-## ✅ Requirements Met
+## Requirements Met
 
 All Insider assessment requirements implemented:
-- ✅ Repository Pattern + Service Layer
-- ✅ Queue/Job/Worker structures
-- ✅ Rate limiting (2 messages/5 seconds)
-- ✅ Redis caching (messageId + timestamp)
-- ✅ RESTful API standards
-- ✅ Unit & Integration tests
-- ✅ Clean Architecture & SOLID principles
-- ✅ Laravel 10.x best practices
-- ✅ Docker containerization
-- ✅ Complete documentation
+- Repository Pattern + Service Layer
+- Queue/Job/Worker structures
+- Rate limiting (2 messages/5 seconds)
+- Redis caching (messageId + timestamp)
+- RESTful API standards
+- Unit & Integration tests
+- Clean Architecture & SOLID principles
+- Laravel 10.x best practices
+- Docker containerization
+- Complete documentation
 
-## 📄 License
+## License
 
 MIT License
 
