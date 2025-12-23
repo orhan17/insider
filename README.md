@@ -40,7 +40,7 @@ make test-all
 
 ```bash
 # Clone and setup
-git clone https://github.com/orhan17/insider && cd insider
+git clone https://github.com/orhan17/insider.git && cd insider
 cp .env.example .env
 
 # Start Docker
