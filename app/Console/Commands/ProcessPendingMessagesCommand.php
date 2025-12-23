@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Contracts\LogServiceInterface;
+use App\Contracts\MessageServiceInterface;
 use App\Jobs\SendMessageJob;
-use App\Services\MessageService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class ProcessPendingMessagesCommand extends Command
 {
@@ -14,7 +14,14 @@ class ProcessPendingMessagesCommand extends Command
 
     protected $description = 'Process pending messages and dispatch them to queue with rate limiting';
 
-    public function handle(MessageService $messageService): int
+    public function __construct(
+        private readonly MessageServiceInterface $messageService,
+        private readonly LogServiceInterface $logService
+    ) {
+        parent::__construct();
+    }
+
+    public function handle(): int
     {
         $limit = (int) $this->option('limit');
 
@@ -26,7 +33,7 @@ class ProcessPendingMessagesCommand extends Command
         $this->info("Starting to process pending messages...");
         $this->info("Rate limit: {$rateLimit} messages every {$rateInterval} seconds");
 
-        $pendingMessages = $messageService->getPendingMessages($limit);
+        $pendingMessages = $this->messageService->getPendingMessages($limit);
 
         if ($pendingMessages->isEmpty()) {
             $this->info('No pending messages found.');
@@ -37,7 +44,8 @@ class ProcessPendingMessagesCommand extends Command
         $this->info("Found {$pendingMessages->count()} pending messages");
 
         $processed = 0;
-        $batches = $pendingMessages->chunk($rateLimit);
+        $messages = $pendingMessages->all();
+        $batches = array_chunk($messages, $rateLimit);
 
         foreach ($batches as $batchIndex => $batch) {
             foreach ($batch as $message) {
@@ -51,7 +59,7 @@ class ProcessPendingMessagesCommand extends Command
                 $this->info("Dispatched message #{$message->id} to queue");
             }
 
-            if ($batchIndex < $batches->count() - 1) {
+            if ($batchIndex < count($batches) - 1) {
                 $this->info("Waiting {$rateInterval} seconds before next batch...");
                 sleep($rateInterval);
             }
@@ -60,7 +68,7 @@ class ProcessPendingMessagesCommand extends Command
         $this->info("Successfully dispatched {$processed} messages to queue");
         $this->info("Run 'php artisan queue:work' to process the queue");
 
-        Log::info('Pending messages processed', ['count' => $processed]);
+        $this->logService->info('Pending messages processed', ['count' => $processed]);
 
         return self::SUCCESS;
     }

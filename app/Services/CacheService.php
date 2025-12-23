@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Contracts\CacheServiceInterface;
 use Illuminate\Support\Facades\Cache;
 
-class CacheService
+class CacheService implements CacheServiceInterface
 {
     private const SENT_MESSAGE_PREFIX = 'sent_message:';
     private const TTL = 86400;

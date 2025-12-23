@@ -2,23 +2,26 @@
 
 namespace App\Services;
 
+use App\Contracts\LogServiceInterface;
+use App\Contracts\WebhookServiceInterface;
+use App\DTO\WebhookResponseDTO;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Log;
 
-class WebhookService
+class WebhookService implements WebhookServiceInterface
 {
     private readonly string $webhookUrl;
     private readonly string $authKey;
 
     public function __construct(
-        private readonly Client $httpClient
+        private readonly Client $httpClient,
+        private readonly LogServiceInterface $logService
     ) {
         $this->webhookUrl = config('services.webhook.url');
         $this->authKey = config('services.webhook.auth_key');
     }
 
-    public function sendMessage(string $phoneNumber, string $content): array
+    public function sendMessage(string $phoneNumber, string $content): WebhookResponseDTO
     {
         try {
             $response = $this->httpClient->post($this->webhookUrl, [
@@ -36,39 +39,27 @@ class WebhookService
             $body = json_decode($response->getBody()->getContents(), true);
 
             if ($statusCode === 202 && isset($body['messageId'])) {
-                Log::info('Message sent successfully', [
+                $this->logService->info('Message sent successfully', [
                     'phone' => $phoneNumber,
                     'messageId' => $body['messageId'],
                 ]);
 
-                return [
-                    'success' => true,
-                    'messageId' => $body['messageId'],
-                    'error' => null,
-                ];
+                return WebhookResponseDTO::success($body['messageId']);
             }
 
-            Log::error('Unexpected webhook response', [
+            $this->logService->error('Unexpected webhook response', [
                 'status' => $statusCode,
                 'body' => $body,
             ]);
 
-            return [
-                'success' => false,
-                'messageId' => null,
-                'error' => 'Unexpected response from webhook',
-            ];
+            return WebhookResponseDTO::failure('Unexpected response from webhook');
         } catch (GuzzleException $e) {
-            Log::error('Failed to send message via webhook', [
+            $this->logService->error('Failed to send message via webhook', [
                 'phone' => $phoneNumber,
                 'error' => $e->getMessage(),
             ]);
 
-            return [
-                'success' => false,
-                'messageId' => null,
-                'error' => $e->getMessage(),
-            ];
+            return WebhookResponseDTO::failure($e->getMessage());
         }
     }
 }

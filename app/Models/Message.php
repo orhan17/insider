@@ -29,20 +29,4 @@ class Message extends Model
     {
         return $this->status === self::STATUS_PENDING;
     }
-
-    public function markAsSent(string $messageId): void
-    {
-        $this->update([
-            'status' => self::STATUS_SENT,
-            'message_id' => $messageId,
-            'sent_at' => now(),
-        ]);
-    }
-
-    public function markAsFailed(): void
-    {
-        $this->update([
-            'status' => self::STATUS_FAILED,
-        ]);
-    }
 }

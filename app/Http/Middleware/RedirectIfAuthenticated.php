@@ -2,16 +2,33 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Auth\Middleware\RedirectIfAuthenticated as Middleware;
+use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
-class RedirectIfAuthenticated extends Middleware
+class RedirectIfAuthenticated
 {
     /**
-     * Get the path the user should be redirected to when they are authenticated.
+     * Handle an incoming request.
+     *
+     * @param Request $request
+     * @param Closure(Request): (Response) $next
+     * @param string ...$guards
+     * @return Response
      */
-    protected function redirectTo(Request $request): ?string
+    public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        return $request->expectsJson() ? null : '/home';
+        $guards = empty($guards) ? [null] : $guards;
+
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                /** @var RedirectResponse */
+                return redirect('/home');
+            }
+        }
+
+        return $next($request);
     }
 }

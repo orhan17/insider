@@ -2,22 +2,20 @@
 
 namespace Tests\Unit;
 
-use App\Services\CacheService;
+use App\Contracts\CacheServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class CacheServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private CacheService $cacheService;
+    private CacheServiceInterface $cacheService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->cacheService = new CacheService();
-        Cache::flush();
+        $this->cacheService = app(CacheServiceInterface::class);
     }
 
     public function test_can_cache_sent_message(): void

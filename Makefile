@@ -65,3 +65,6 @@ setup: build up install key migrate seed ## Complete setup
 
 quality: psalm check-cs deptrac ## Run all quality checks
 
+test-all: test psalm check-cs deptrac ## Run all tests and quality checks
+	@echo "All tests and quality checks completed!"
+

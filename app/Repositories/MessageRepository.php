@@ -17,8 +17,12 @@ class MessageRepository implements MessageRepositoryInterface
         return $this->model->find($id);
     }
 
+    /**
+     * @return Collection<int, Message>
+     */
     public function findPendingMessages(int $limit): Collection
     {
+        /** @var Collection<int, Message> */
         return $this->model
             ->query()
             ->where('status', Message::STATUS_PENDING)
@@ -27,8 +31,12 @@ class MessageRepository implements MessageRepositoryInterface
             ->get();
     }
 
+    /**
+     * @return Collection<int, Message>
+     */
     public function findSentMessages(): Collection
     {
+        /** @var Collection<int, Message> */
         return $this->model
             ->query()
             ->where('status', Message::STATUS_SENT)
@@ -60,9 +68,11 @@ class MessageRepository implements MessageRepositoryInterface
             return false;
         }
 
-        $message->markAsSent($messageId);
-
-        return true;
+        return $message->update([
+            'status' => Message::STATUS_SENT,
+            'message_id' => $messageId,
+            'sent_at' => now(),
+        ]);
     }
 
     public function markAsFailed(int $id): bool
@@ -73,8 +83,8 @@ class MessageRepository implements MessageRepositoryInterface
             return false;
         }
 
-        $message->markAsFailed();
-
-        return true;
+        return $message->update([
+            'status' => Message::STATUS_FAILED,
+        ]);
     }
 }

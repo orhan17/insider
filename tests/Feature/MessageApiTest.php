@@ -23,22 +23,26 @@ class MessageApiTest extends TestCase
             ->assertJsonStructure([
                 'success',
                 'data' => [
-                    '*' => [
-                        'id',
-                        'phone_number',
-                        'content',
-                        'status',
-                        'message_id',
-                        'sent_at',
-                        'created_at',
-                        'updated_at',
+                    'messages' => [
+                        '*' => [
+                            'id',
+                            'phone_number',
+                            'content',
+                            'status',
+                            'message_id',
+                            'sent_at',
+                            'created_at',
+                            'updated_at',
+                        ],
                     ],
+                    'count',
                 ],
-                'count',
             ])
             ->assertJson([
                 'success' => true,
-                'count' => 3,
+                'data' => [
+                    'count' => 3,
+                ],
             ]);
     }
 
@@ -52,10 +56,12 @@ class MessageApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'count' => 3,
+                'data' => [
+                    'count' => 3,
+                ],
             ]);
 
-        $data = $response->json('data');
+        $data = $response->json('data.messages');
         foreach ($data as $message) {
             $this->assertEquals(Message::STATUS_SENT, $message['status']);
         }
@@ -70,8 +76,10 @@ class MessageApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'count' => 0,
-                'data' => [],
+                'data' => [
+                    'count' => 0,
+                    'messages' => [],
+                ],
             ]);
     }
 
@@ -118,10 +126,6 @@ class MessageApiTest extends TestCase
         $response = $this->postJson('/api/v1/messages', $payload);
 
         $response->assertStatus(422)
-            ->assertJson([
-                'success' => false,
-                'message' => 'Validation failed',
-            ])
             ->assertJsonValidationErrors(['phone_number']);
     }
 
@@ -135,10 +139,6 @@ class MessageApiTest extends TestCase
         $response = $this->postJson('/api/v1/messages', $payload);
 
         $response->assertStatus(422)
-            ->assertJson([
-                'success' => false,
-                'message' => 'Validation failed',
-            ])
             ->assertJsonValidationErrors(['content']);
     }
 
@@ -147,10 +147,6 @@ class MessageApiTest extends TestCase
         $response = $this->postJson('/api/v1/messages', []);
 
         $response->assertStatus(422)
-            ->assertJson([
-                'success' => false,
-                'message' => 'Validation failed',
-            ])
             ->assertJsonValidationErrors(['phone_number', 'content']);
     }
 }

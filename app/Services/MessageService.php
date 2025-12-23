@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Contracts\MessageServiceInterface;
 use App\Models\Message;
 use App\Repositories\MessageRepositoryInterface;
+use App\Validators\MessageValidator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Validator;
-use InvalidArgumentException;
 
-class MessageService implements MessageServiceInterface
+final class MessageService implements MessageServiceInterface
 {
     public function __construct(
         private readonly MessageRepositoryInterface $messageRepository,
-        private readonly int $maxContentLength = 160
+        private readonly MessageValidator $validator
     ) {
     }
 
@@ -29,8 +30,8 @@ class MessageService implements MessageServiceInterface
 
     public function createMessage(string $phoneNumber, string $content): Message
     {
-        $this->validateMessageContent($content);
-        $this->validatePhoneNumber($phoneNumber);
+        $this->validator->validatePhoneNumber($phoneNumber);
+        $this->validator->validateContent($content);
 
         return $this->messageRepository->create([
             'phone_number' => $phoneNumber,
@@ -47,30 +48,5 @@ class MessageService implements MessageServiceInterface
     public function markAsFailed(int $messageId): bool
     {
         return $this->messageRepository->markAsFailed($messageId);
-    }
-
-    private function validateMessageContent(string $content): void
-    {
-        if (mb_strlen($content) > $this->maxContentLength) {
-            throw new InvalidArgumentException(
-                sprintf('Message content cannot exceed %d characters', $this->maxContentLength)
-            );
-        }
-
-        if (empty(trim($content))) {
-            throw new InvalidArgumentException('Message content cannot be empty');
-        }
-    }
-
-    private function validatePhoneNumber(string $phoneNumber): void
-    {
-        $validator = Validator::make(
-            ['phone_number' => $phoneNumber],
-            ['phone_number' => 'required|regex:/^\+[1-9]\d{1,14}$/']
-        );
-
-        if ($validator->fails()) {
-            throw new InvalidArgumentException('Invalid phone number format. Expected format: +1234567890');
-        }
     }
 }

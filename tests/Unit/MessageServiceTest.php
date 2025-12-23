@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Contracts\MessageServiceInterface;
 use App\Models\Message;
-use App\Services\MessageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,12 +11,12 @@ class MessageServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private MessageService $service;
+    private MessageServiceInterface $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = app(MessageService::class);
+        $this->service = app(MessageServiceInterface::class);
     }
 
     public function test_can_create_message_with_valid_data(): void
