@@ -26,8 +26,6 @@ curl -X POST http://localhost:8081/api/v1/messages \
 # Get all sent messages
 curl -X GET http://localhost:8081/api/v1/messages
 
-# Get pending messages
-curl -X GET http://localhost:8081/api/v1/messages/pending
 
 # Process pending messages (trigger queue)
 make process
@@ -42,7 +40,7 @@ make test-all
 
 ```bash
 # Clone and setup
-git clone <repository-url> && cd insider
+git clone https://github.com/orhan17/insider && cd insider
 cp .env.example .env
 
 # Start Docker
@@ -108,29 +106,6 @@ curl -X GET http://localhost:8081/api/v1/messages
 }
 ```
 
-### Get Pending Messages
-```bash
-# cURL
-curl -X GET http://localhost:8081/api/v1/messages/pending
-
-# Response (200 OK)
-{
-  "success": true,
-  "data": [
-    {
-      "id": 2,
-      "phone_number": "+905552222222",
-      "content": "Pending message",
-      "status": "pending",
-      "message_id": null,
-      "sent_at": null,
-      "created_at": "2024-01-01T12:01:00Z",
-      "updated_at": "2024-01-01T12:01:00Z"
-    }
-  ],
-  "count": 1
-}
-```
 
 ## Usage
 
