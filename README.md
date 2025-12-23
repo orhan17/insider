@@ -1,20 +1,21 @@
 # Insider Message Sending System
 
+
 Automatic bulk message sending system with Laravel 10, Redis queue, and rate limiting.
 
-## 📋 Features
+## Features
 
-- ✅ Bulk message sending via webhook
-- ✅ Rate limiting: 2 messages per 5 seconds
-- ✅ Asynchronous queue processing (Redis)
-- ✅ Message status tracking (pending/sent/failed)
-- ✅ Redis caching for sent messages
-- ✅ RESTful API endpoints
-- ✅ Repository Pattern + Service Layer
-- ✅ Full test coverage (Unit + Feature)
-- ✅ Code quality tools (Psalm, PHP-CS-Fixer, Deptrac)
+- Bulk message sending via webhook
+- Rate limiting: 2 messages per 5 seconds
+- Asynchronous queue processing (Redis)
+- Message status tracking (pending/sent/failed)
+- Redis caching for sent messages
+- RESTful API endpoints
+- Repository Pattern + Service Layer
+- Full test coverage (Unit + Feature)
+- Code quality tools (Psalm, PHP-CS-Fixer, Deptrac)
 
-## 🚀 Quick API Examples
+## Quick API Examples
 
 ```bash
 # Create a new message
@@ -25,6 +26,9 @@ curl -X POST http://localhost:8081/api/v1/messages \
 # Get all sent messages
 curl -X GET http://localhost:8081/api/v1/messages
 
+# Get pending messages
+curl -X GET http://localhost:8081/api/v1/messages/pending
+
 # Process pending messages (trigger queue)
 make process
 # or
@@ -34,7 +38,7 @@ docker-compose exec app php artisan messages:process
 make test-all
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Clone and setup
@@ -54,7 +58,7 @@ WEBHOOK_URL=https://webhook.site/your-unique-id
 WEBHOOK_AUTH_KEY=your-auth-key-here
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Create Message
 ```bash
@@ -128,7 +132,7 @@ curl -X GET http://localhost:8081/api/v1/messages/pending
 }
 ```
 
-## 🔄 Usage
+## Usage
 
 ```bash
 # Process pending messages
@@ -138,7 +142,7 @@ docker-compose exec app php artisan messages:process
 docker-compose logs -f queue
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 - **Repository Pattern** - Data access abstraction
 - **Service Layer** - Business logic (MessageService, WebhookService, CacheService)
@@ -276,3 +280,8 @@ All Insider assessment requirements implemented:
 MIT License
 
 ---
+
+## Additional Information
+
+![Insider Assessment](img.png)
+
