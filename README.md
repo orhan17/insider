@@ -33,7 +33,10 @@ curl -X POST http://localhost:8081/api/v1/messages \
 
 curl -X GET http://localhost:8081/api/v1/messages
 
-# 6. Process messages (after configuring webhook in .env)
+# 6. Start queue worker (optional - runs automatically in queue container)
+docker-compose exec app php artisan queue:work
+
+# 7. Process messages (after configuring webhook in .env)
 docker-compose exec app php artisan messages:process
 ```
 
@@ -300,6 +303,9 @@ make migrate         # Run migrations
 make seed            # Seed database
 make process         # Process pending messages
 make test-all        # Run all tests + quality checks
+
+# Queue worker
+docker-compose exec app php artisan queue:work
 
 # View logs
 docker-compose logs -f queue
