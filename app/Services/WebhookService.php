@@ -19,6 +19,10 @@ class WebhookService implements WebhookServiceInterface
     ) {
         $this->webhookUrl = config('services.webhook.url');
         $this->authKey = config('services.webhook.auth_key');
+
+        if (empty($this->webhookUrl) || $this->webhookUrl === 'https://webhook.site') {
+            $this->logService->warning('Webhook URL is not configured properly. Please set a valid webhook.site URL in .env file.');
+        }
     }
 
     public function sendMessage(string $phoneNumber, string $content): WebhookResponseDTO

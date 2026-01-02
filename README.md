@@ -1,7 +1,43 @@
 # Insider Message Sending System
 
-
 Automatic bulk message sending system with Laravel 10, Redis queue, and rate limiting.
+
+## For Reviewers - Fresh Installation Test
+
+To verify the project works from scratch:
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/orhan17/insider.git
+cd insider
+cp .env.example .env
+
+# 2. Start Docker (wait 10 seconds for MySQL to be ready)
+docker-compose up -d
+sleep 10
+
+# 3. Install and setup
+docker-compose exec app composer install
+docker-compose exec app php artisan key:generate
+docker-compose exec app php artisan migrate --seed
+
+# 4. Verify everything works
+docker-compose exec app php artisan test
+
+# Expected: ✅ 27 tests passing
+
+# 5. Test API
+curl -X POST http://localhost:8081/api/v1/messages \
+  -H "Content-Type: application/json" \
+  -d '{"phone_number": "+905551111111", "content": "Test message"}'
+
+curl -X GET http://localhost:8081/api/v1/messages
+
+# 6. Process messages (after configuring webhook in .env)
+docker-compose exec app php artisan messages:process
+```
+
+**Important:** `.env.example` is pre-configured for Docker. No manual configuration needed for database or Redis - it works out of the box!
 
 ## Features
 
@@ -39,22 +75,45 @@ make test-all
 ## Quick Start
 
 ```bash
-# Clone and setup
-git clone https://github.com/orhan17/insider.git && cd insider
+# 1. Clone repository
+git clone https://github.com/orhan17/insider.git
+cd insider
+
+# 2. Copy environment file (already configured for Docker)
 cp .env.example .env
 
-# Start Docker
+# 3. Start Docker containers
 docker-compose up -d
 
-# Install & migrate
+# 4. Install dependencies
 docker-compose exec app composer install
-docker-compose exec app php artisan key:generate
-docker-compose exec app php artisan migrate
 
-# Configure webhook in .env
-WEBHOOK_URL=https://webhook.site/your-unique-id
-WEBHOOK_AUTH_KEY=your-auth-key-here
+# 5. Generate application key
+docker-compose exec app php artisan key:generate
+
+# 6. Run migrations and seed database
+docker-compose exec app php artisan migrate --seed
+
+# 7. Configure webhook (REQUIRED for message sending)
+# a. Go to https://webhook.site
+# b. Copy your unique URL (e.g., https://webhook.site/abc123-def456)
+# c. On webhook.site, click "Edit" and set:
+#    - Status code: 202
+#    - Content type: application/json
+#    - Content: {"message": "Accepted", "messageId": "$request.uuid$"}
+# d. Edit .env file and set:
+#    WEBHOOK_URL=https://webhook.site/abc123-def456
+# e. Restart queue: docker-compose restart queue
+
+# 8. Process messages
+docker-compose exec app php artisan messages:process
+
+# Application is ready at http://localhost:8081
 ```
+
+**Note:** `.env.example` is pre-configured for Docker with correct service names (db, redis). Just copy it and start using!
+
+**Webhook Setup:** See detailed webhook configuration in [Usage](#webhook-configuration) section below.
 
 ## API Endpoints
 
@@ -108,6 +167,58 @@ curl -X GET http://localhost:8081/api/v1/messages
 
 
 ## Usage
+
+### Webhook Configuration
+
+**Important:** To send messages, you need to configure a webhook URL.
+
+#### Step 1: Get your unique webhook URL
+- Go to https://webhook.site
+- You'll receive a unique URL like `https://webhook.site/abc123-def456-ghi789`
+- Keep this page open to see incoming requests
+
+#### Step 2: Configure webhook.site response
+To simulate a real webhook service, configure the response on webhook.site:
+
+1. Click **"Edit"** button on webhook.site page
+2. Set **Status code:** `202`
+3. Set **Content type:** `application/json`
+4. Set **Content:** 
+   ```json
+   {
+     "message": "Accepted",
+     "messageId": "$request.uuid$"
+   }
+   ```
+5. Click **"Save"**
+
+This configuration makes webhook.site return the expected response format.
+
+#### Step 3: Update .env file
+```bash
+# Edit .env and paste your webhook.site URL
+WEBHOOK_URL=https://webhook.site/abc123-def456-ghi789
+WEBHOOK_AUTH_KEY=INS.me1x9uMcyYGlhKKQVPoc.bO3j9aZwRTOcA2Ywo
+```
+
+#### Step 4: Restart queue worker
+```bash
+docker-compose restart queue
+```
+
+#### Step 5: Test webhook
+```bash
+# Process pending messages
+docker-compose exec app php artisan messages:process
+
+# Check webhook.site page - you should see incoming POST requests
+```
+
+**Note:** Without a valid webhook URL and proper response configuration, messages won't be marked as sent.
+
+For troubleshooting, see [WEBHOOK_TROUBLESHOOTING.md](WEBHOOK_TROUBLESHOOTING.md)
+
+### Processing Messages
 
 ```bash
 # Process pending messages
@@ -214,27 +325,38 @@ docker-compose exec app php artisan tinker
 
 ## Environment Variables
 
+**Important:** `.env.example` is already configured for Docker. After `cp .env.example .env`, no manual changes needed unless you want to customize.
+
+**Default Docker Configuration:**
 ```env
-# Database
-DB_HOST=db
+# Database (matches docker-compose.yml)
+DB_HOST=db                    # Docker service name
 DB_DATABASE=insider_db
 DB_USERNAME=insider_user
 DB_PASSWORD=insider_pass
+DB_PORT=3306
 
-# Redis
-REDIS_HOST=redis
-CACHE_DRIVER=redis
-QUEUE_CONNECTION=redis
+# Redis (matches docker-compose.yml)
+REDIS_HOST=redis              # Docker service name
+REDIS_PORT=6379
+CACHE_DRIVER=redis            # Required for caching
+QUEUE_CONNECTION=redis        # Required for queues
+SESSION_DRIVER=redis
 
 # Webhook
 WEBHOOK_URL=https://webhook.site/your-unique-id
 WEBHOOK_AUTH_KEY=your-auth-key-here
 
 # Message Settings (optional)
-MESSAGE_RATE_LIMIT=2
-MESSAGE_RATE_INTERVAL=5
-MESSAGE_MAX_LENGTH=160
+MESSAGE_RATE_LIMIT=2          # Messages per interval
+MESSAGE_RATE_INTERVAL=5       # Seconds
+MESSAGE_MAX_LENGTH=160        # Characters
 ```
+
+**Troubleshooting:**
+- If migration fails, ensure `DB_HOST=db` (not `127.0.0.1`)
+- If cache/queue fails, ensure `REDIS_HOST=redis` and `CACHE_DRIVER=redis`
+- Database and Redis services must be running: `docker-compose ps`
 
 ## Requirements Met
 

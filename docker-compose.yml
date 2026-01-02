@@ -33,10 +33,10 @@ services:
     container_name: insider_db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: insider
+      MYSQL_DATABASE: insider_db
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: password
-      MYSQL_USER: insider
+      MYSQL_PASSWORD: insider_pass
+      MYSQL_USER: insider_user
     ports:
       - "33060:3306"
     volumes:
